@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">INVENTORY DECISION SUPPORT</p>
+    <h1>Good decisions start with your sales data.</h1>
+    <p class="subhead">Review demand, spot low-stock items, and plan your next replenishment.</p>
+  </div>
+  <a class="button light" href="{{ url_for('export_recommendations') }}">↓ Export recommendations CSV</a>
+</section>
+<section class="metrics">
+  <article class="metric"><span>Products tracked</span><strong>{{ rows|length }}</strong><small>Across your catalogue</small></article>
+  <article class="metric"><span>Units in stock</span><strong>{{ units }}</strong><small>Current recorded quantity</small></article>
+  <article class="metric"><span>Units sold · 14 days</span><strong>{{ sales_count }}</strong><small>Based on recorded sales</small></article>
+  <article class="metric {% if low_stock %}metric-alert{% endif %}"><span>Need review</span><strong>{{ low_stock }}</strong><small>At or below reorder point</small></article>
+</section>
+<section class="section-heading">
+  <div><p class="eyebrow">ACTION LIST</p><h2>Replenishment recommendations</h2><p class="muted">Uses sales from the last 14 calendar days, including today.</p></div>
+  <a class="text-link" href="{{ url_for('products_page') }}">Manage products →</a>
+</section>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Product</th><th>Stock</th><th>14-day sales</th><th>Avg. daily</th><th>Reorder point</th><th>Suggested order</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td><div class="product-name">{{ row.product.name }}</div><div class="muted tiny">{{ row.product.sku }} · {{ row.product.category or 'Uncategorized' }}</div></td>
+      <td>{{ row.product.stock_qty }}</td>
+      <td>{{ row.sold_period }}</td>
+      <td>{{ "%.2f"|format(row.avg_daily) }}</td>
+      <td>{{ "%.1f"|format(row.reorder_point) }}</td>
+      <td><strong>{{ row.suggested_qty }}</strong></td>
+      <td>{% if row.needs_reorder %}<span class="pill danger">Reorder</span>{% else %}<span class="pill good">Stock OK</span>{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7" class="empty">No products yet. Add products to start using the dashboard.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<div class="note"><strong>How recommendations work:</strong> reorder point = average daily sales × supplier lead time + safety stock. When current stock is at or below this point, the app suggests enough units to reach the target coverage period plus safety stock. This is a baseline heuristic; validate it against your store's actual data.</div>
+{% endblock %}

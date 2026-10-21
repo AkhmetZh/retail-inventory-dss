@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sales{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">TRANSACTIONS</p><h1>Sales</h1><p class="subhead">Record a sale to update the product's recorded stock and sales history.</p></div></div>
+<section class="panel">
+<h2>Record a sale</h2>
+{% if products %}
+<form class="form-grid sales-form" method="post" action="{{ url_for('add_sale') }}">
+  <label>Product<select name="product_id" required>{% for p in products %}<option value="{{ p.id }}">{{ p.sku }} — {{ p.name }}</option>{% endfor %}</select></label>
+  <label>Quantity sold<input type="number" name="quantity" min="1" step="1" required value="1"></label>
+  <label>Sale date<input type="date" name="sale_date" value="{{ today }}" required></label>
+  <div class="form-actions"><button class="button" type="submit">Record sale</button></div>
+</form>
+{% else %}<p class="muted">Add a product before recording a sale.</p>{% endif %}
+</section>
+<section class="section-heading"><div><h2>Recent sales</h2><p class="muted">Showing up to 100 latest records</p></div></section>
+<div class="table-wrap"><table>
+<thead><tr><th>Date</th><th>SKU</th><th>Product</th><th>Quantity</th><th>Unit price</th><th>Revenue</th></tr></thead>
+<tbody>{% for s in sales %}<tr><td>{{ s.sale_date }}</td><td>{{ s.sku }}</td><td class="product-name">{{ s.product_name }}</td><td>{{ s.quantity }}</td><td>{{ "%.2f"|format(s.unit_price) }}</td><td>{{ "%.2f"|format(s.quantity * s.unit_price) }}</td></tr>
+{% else %}<tr><td colspan="6" class="empty">No sales recorded yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}
